@@ -79,8 +79,9 @@ section{padding-block:clamp(48px,8vw,96px)}
 .car-track{--n:4;--gap:20px;display:flex;gap:var(--gap);overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;scroll-behavior:smooth}
 .car-track::-webkit-scrollbar{display:none}
 .reel{flex:0 0 calc((100% - (var(--n) - 1) * var(--gap)) / var(--n));scroll-snap-align:start;min-width:0;display:flex;flex-direction:column;gap:10px}
-.reel .frame{position:relative;aspect-ratio:1/1.85;border-radius:8px;overflow:hidden;background:var(--ink)}
-.reel iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#fff}
+/* Instagram's embed adds a ~54px header and a footer (likes, comments). The frame crops the iframe to the 4:5 video area only. */
+.reel .frame{position:relative;aspect-ratio:4/5;border-radius:8px;overflow:hidden;background:var(--ink)}
+.reel iframe{position:absolute;left:0;top:-56px;width:100%;height:calc(100% + 360px);border:0;background:transparent}
 .reel .ext{font-size:14px;font-weight:600;text-decoration-thickness:2px;text-underline-offset:4px}
 .car-nav{display:flex;gap:10px;margin-top:22px;align-items:center}
 .car-nav button{width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:background .15s,color .15s,opacity .15s}
@@ -279,7 +280,7 @@ document.getElementById('yr').textContent=new Date().getFullYear();
     var card=document.createElement('div');card.className='reel';
     var fr=document.createElement('div');fr.className='frame';
     var f=document.createElement('iframe');
-    f.src=url+'embed/';f.title='Instagram reel '+(i+1);f.loading='lazy';f.allowFullscreen=true;
+    f.src=url+'embed/';f.title='Instagram reel '+(i+1);f.loading='lazy';f.allowFullscreen=true;f.setAttribute('scrolling','no');
     f.setAttribute('allow','autoplay; encrypted-media; picture-in-picture; fullscreen');
     fr.appendChild(f);
     var a=document.createElement('a');a.className='ext';a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Open on Instagram';
