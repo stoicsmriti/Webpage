@@ -82,6 +82,7 @@ section{padding-block:clamp(48px,8vw,96px)}
 /* Instagram's embed adds a ~54px header and a footer (likes, comments). The frame crops the iframe to the 4:5 video area only. */
 .reel .frame{position:relative;aspect-ratio:4/5;border-radius:8px;overflow:hidden;background:var(--ink)}
 .reel iframe{position:absolute;left:0;top:-56px;width:100%;height:calc(100% + 360px);border:0;background:transparent}
+.reel video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
 .reel .ext{font-size:14px;font-weight:600;text-decoration-thickness:2px;text-underline-offset:4px}
 .car-nav{display:flex;gap:10px;margin-top:22px;align-items:center}
 .car-nav button{width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:background .15s,color .15s,opacity .15s}
@@ -110,13 +111,14 @@ section{padding-block:clamp(48px,8vw,96px)}
 .marquee::before,.marquee::after{content:"";position:absolute;top:0;bottom:0;width:60px;z-index:1;pointer-events:none}
 .marquee::before{left:0;background:linear-gradient(90deg,var(--surface),transparent)}
 .marquee::after{right:0;background:linear-gradient(270deg,var(--surface),transparent)}
-.track{display:flex;width:max-content;animation:scroll 38s linear infinite}
-.marquee:hover .track{animation-play-state:paused}
+.track{display:flex;width:max-content;-webkit-animation:scroll 38s linear infinite;animation:scroll 38s linear infinite;will-change:transform}
+@media (hover:hover) and (pointer:fine){.marquee:hover .track{animation-play-state:paused}}
 .track span{font:700 clamp(22px,3vw,30px)/1 var(--display);letter-spacing:-.01em;white-space:nowrap;padding-inline:clamp(22px,3vw,40px);display:flex;align-items:center;gap:clamp(22px,3vw,40px)}
 .track span::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--red)}
 .track .up{text-transform:uppercase;letter-spacing:.04em}
 .marquee-label{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center;margin:36px 0 14px}
-@keyframes scroll{to{transform:translateX(-50%)}}
+@-webkit-keyframes scroll{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(-50%,0,0)}}
+@keyframes scroll{from{transform:translate3d(0,0,0)}to{transform:translate3d(-50%,0,0)}}
 @media (prefers-reduced-motion:reduce){.track{animation:none;width:auto;flex-wrap:wrap;justify-content:center;row-gap:12px}.track [aria-hidden]{display:none}}
 
 /* contact */
@@ -269,40 +271,11 @@ footer{padding-block:28px;display:flex;justify-content:space-between;gap:12px;fl
 </div>
 
 <script>
-document.getElementById('yr').textContent=new Date().getFullYear();
-
-/* Instagram reels carousel. Add or swap IDs: the code is the part after /reel/ in the reel's URL. */
-(function(){
-  var ids=['DX_6ny8JXQL','DeHoDA1NP-u','Dd9Gq5cvwNu','Dd6fgIAv4RU','Dd3-0O6uIm6','DdtpCFpJ1-n','DdoVyAnM8Pc','DdjZFp-NIpA','DdZHVPxBHwo','DdT360ZsB3_'];
-  var track=document.getElementById('car-track'),prev=document.getElementById('car-prev'),next=document.getElementById('car-next'),count=document.getElementById('car-count');
-  ids.forEach(function(id,i){
-    var url='https://www.instagram.com/reel/'+id+'/';
-    var card=document.createElement('div');card.className='reel';
-    var fr=document.createElement('div');fr.className='frame';
-    var f=document.createElement('iframe');
-    f.src=url+'embed/';f.title='Instagram reel '+(i+1);f.loading='lazy';f.allowFullscreen=true;f.setAttribute('scrolling','no');
-    f.setAttribute('allow','autoplay; encrypted-media; picture-in-picture; fullscreen');
-    fr.appendChild(f);
-    var a=document.createElement('a');a.className='ext';a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Open on Instagram';
-    card.appendChild(fr);card.appendChild(a);track.appendChild(card);
-  });
-  function step(){var c=track.firstElementChild;return c?c.getBoundingClientRect().width+parseFloat(getComputedStyle(track).columnGap||0):0}
-  function update(){
-    var max=track.scrollWidth-track.clientWidth,st=step();
-    prev.disabled=track.scrollLeft<=2;next.disabled=track.scrollLeft>=max-2;
-    var n=Math.round(track.clientWidth/st)||1,first=Math.round(track.scrollLeft/st)+1;
-    count.textContent=first+'–'+Math.min(first+n-1,ids.length)+' of '+ids.length;
-  }
-  prev.addEventListener('click',function(){track.scrollBy({left:-step(),behavior:'smooth'})});
-  next.addEventListener('click',function(){track.scrollBy({left:step(),behavior:'smooth'})});
-  track.addEventListener('scroll',function(){window.requestAnimationFrame(update)});
-  window.addEventListener('resize',update);
-  update();
-})();
+try{document.getElementById('yr').textContent=new Date().getFullYear()}catch(e){}
 
 /* Client marquee. Names are text placeholders; set `logo` to an image path
    (e.g. "logos/google.svg") to show the real logo instead. */
-(function(){
+try{(function(){
   var clients=[
     {n:'Google'},{n:'Microsoft'},{n:'Netflix',c:'up'},{n:'Pantaloons'},
     {n:'Shiprocket'},{n:'Bata'},{n:'Times Internet'},{n:'South Indian Bank'},
@@ -319,5 +292,53 @@ document.getElementById('yr').textContent=new Date().getFullYear();
     });
   }
   add(false);add(true);
-})();
+})()}catch(e){}
+
+/* Reels carousel.
+   Each reel has an Instagram `id` (the part after /reel/ in its URL).
+   For playback that works in every browser, export the video as MP4, put it in a
+   `videos/` folder and add `src:'videos/name.mp4'` (and optional `poster:'videos/name.jpg'`).
+   Reels without `src` fall back to Instagram's embed, which Safari and Edge can block. */
+try{(function(){
+  var reels=[
+    {id:'DX_6ny8JXQL'},{id:'DeHoDA1NP-u'},{id:'Dd9Gq5cvwNu'},{id:'Dd6fgIAv4RU'},{id:'Dd3-0O6uIm6'},
+    {id:'DdtpCFpJ1-n'},{id:'DdoVyAnM8Pc'},{id:'DdjZFp-NIpA'},{id:'DdZHVPxBHwo'},{id:'DdT360ZsB3_'}
+  ];
+  var track=document.getElementById('car-track'),prev=document.getElementById('car-prev'),next=document.getElementById('car-next'),count=document.getElementById('car-count');
+  reels.forEach(function(r,i){
+    var url='https://www.instagram.com/reel/'+r.id+'/';
+    var card=document.createElement('div');card.className='reel';
+    var fr=document.createElement('div');fr.className='frame';
+    if(r.src){
+      var v=document.createElement('video');
+      v.src=r.src;v.controls=true;v.preload='metadata';v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
+      if(r.poster)v.poster=r.poster;
+      v.setAttribute('aria-label','Reel '+(i+1));
+      fr.appendChild(v);
+    }else{
+      var f=document.createElement('iframe');
+      f.src=url+'embed/';f.title='Instagram reel '+(i+1);f.setAttribute('loading','lazy');f.setAttribute('allowfullscreen','');f.setAttribute('scrolling','no');
+      f.setAttribute('allow','autoplay; encrypted-media; picture-in-picture; fullscreen');
+      fr.appendChild(f);
+    }
+    var a=document.createElement('a');a.className='ext';a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Open on Instagram';
+    card.appendChild(fr);card.appendChild(a);track.appendChild(card);
+  });
+  function step(){var c=track.firstElementChild;if(!c)return 0;var cs=window.getComputedStyle(track);var g=parseFloat(cs.columnGap||cs.gap)||0;return c.getBoundingClientRect().width+g}
+  function update(){
+    var max=track.scrollWidth-track.clientWidth,st=step()||1;
+    prev.disabled=track.scrollLeft<=2;next.disabled=track.scrollLeft>=max-2;
+    var n=Math.round(track.clientWidth/st)||1,first=Math.round(track.scrollLeft/st)+1;
+    count.textContent=first+'–'+Math.min(first+n-1,reels.length)+' of '+reels.length;
+  }
+  function go(dir){
+    var left=track.scrollLeft+dir*step();
+    if(track.scrollTo){try{track.scrollTo({left:left,behavior:'smooth'})}catch(e){track.scrollLeft=left}}else{track.scrollLeft=left}
+  }
+  prev.addEventListener('click',function(){go(-1)});
+  next.addEventListener('click',function(){go(1)});
+  track.addEventListener('scroll',function(){window.requestAnimationFrame(update)});
+  window.addEventListener('resize',update);
+  update();
+})()}catch(e){}
 </script>
