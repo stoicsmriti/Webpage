@@ -118,7 +118,9 @@ section{padding-block:clamp(48px,8vw,96px)}
 .track{display:flex;width:max-content;-webkit-animation:scroll 38s linear infinite;animation:scroll 38s linear infinite;will-change:transform}
 @media (hover:hover) and (pointer:fine){.marquee:hover .track{animation-play-state:paused}}
 .track span{font:700 clamp(22px,3vw,30px)/1 var(--display);letter-spacing:-.01em;white-space:nowrap;padding-inline:clamp(22px,3vw,40px);display:flex;align-items:center;gap:clamp(22px,3vw,40px)}
-.track span::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--red)}
+.track span::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--red);margin-left:clamp(14px,2.4vw,30px)}
+.track img{width:34px;height:34px;object-fit:contain;border-radius:6px;flex:none}
+.track span{gap:12px}
 .track .up{text-transform:uppercase;letter-spacing:.04em}
 .marquee-label{font:500 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-align:center;margin:36px 0 14px}
 @-webkit-keyframes scroll{from{-webkit-transform:translate3d(0,0,0)}to{-webkit-transform:translate3d(-50%,0,0)}}
@@ -283,17 +285,19 @@ try{document.getElementById('yr').textContent=new Date().getFullYear()}catch(e){
    (e.g. "logos/google.svg") to show the real logo instead. */
 try{(function(){
   var clients=[
-    {n:'Google'},{n:'Microsoft'},{n:'Netflix',c:'up'},{n:'Pantaloons'},
-    {n:'Shiprocket'},{n:'Bata'},{n:'Times Internet'},{n:'South Indian Bank'},
-    {n:'Aditya Birla'},{n:'L&T',c:'up'},{n:'Skechers',c:'up'},{n:'Manyavar'},{n:'Magicbricks'}
+    {n:'Google',logo:'logos/google.png'},{n:'Microsoft',logo:'logos/microsoft.png'},{n:'Netflix',c:'up',logo:'logos/netflix.png'},
+    {n:'Pantaloons',logo:'logos/pantaloons.png'},{n:'Shiprocket',logo:'logos/shiprocket.png'},{n:'Bata',logo:'logos/bata.png'},
+    {n:'Times Internet',logo:'logos/timesinternet.png'},{n:'South Indian Bank'},{n:'Aditya Birla',logo:'logos/adityabirla.png'},
+    {n:'L&T',c:'up'},{n:'Skechers',c:'up',logo:'logos/skechers.png'},{n:'Manyavar',logo:'logos/manyavar.png'},{n:'Magicbricks',logo:'logos/magicbricks.png'}
   ];
   var track=document.getElementById('track');
   function add(hidden){
     clients.forEach(function(c){
       var d=document.createElement('span');
       if(hidden)d.setAttribute('aria-hidden','true');
-      if(c.logo){var im=document.createElement('img');im.src=c.logo;im.alt=c.n;im.style.height='34px';d.appendChild(im)}
-      else{d.textContent=c.n;if(c.c)d.className=c.c}
+      if(c.logo){var im=document.createElement('img');im.src=c.logo;im.alt='';im.setAttribute('width','34');im.setAttribute('height','34');im.setAttribute('loading','eager');d.appendChild(im)}
+      d.appendChild(document.createTextNode(c.n));
+      if(c.c)d.className=c.c;
       track.appendChild(d);
     });
   }
