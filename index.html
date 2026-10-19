@@ -82,6 +82,7 @@ section{padding-block:clamp(48px,8vw,96px)}
 /* Instagram's embed adds a ~54px header and a footer (likes, comments). The frame crops the iframe to the 4:5 video area only. */
 .reel .frame{position:relative;aspect-ratio:4/5;border-radius:8px;overflow:hidden;background:var(--ink)}
 .reel iframe{position:absolute;left:0;top:-56px;width:100%;height:calc(100% + 360px);border:0;background:transparent}
+.reel .yt iframe{top:0;height:100%;background:#000}
 .reel video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}
 .reel .ext{font-size:14px;font-weight:600;text-decoration-thickness:2px;text-underline-offset:4px}
 .car-nav{display:flex;gap:10px;margin-top:22px;align-items:center}
@@ -221,7 +222,7 @@ footer{padding-block:28px;display:flex;justify-content:space-between;gap:12px;fl
   <section id="reels">
     <div class="head">
       <h2>Watch my work</h2>
-      <p>Recent reels from Instagram, playing right here. Use the arrows to see more.</p>
+      <p>Videos and reels, playing right here. Use the arrows to see more.</p>
     </div>
     <div class="car">
       <div class="car-track" id="car-track" tabindex="0" aria-label="Instagram reels"></div>
@@ -303,15 +304,21 @@ try{(function(){
    Reels without `src` fall back to Instagram's embed, which Safari and Edge can block. */
 try{(function(){
   var reels=[
-    {id:'DX_6ny8JXQL'},{id:'DeHoDA1NP-u'},{id:'Dd9Gq5cvwNu'},{id:'Dd6fgIAv4RU'},{id:'Dd3-0O6uIm6'},
-    {id:'DdtpCFpJ1-n'},{id:'DdoVyAnM8Pc'},{id:'DdjZFp-NIpA'},{id:'DdZHVPxBHwo'},{id:'DdT360ZsB3_'}
+    {yt:'7bi_tjS-x2I'},{yt:'TDJKIrisNfk'},
+    {id:'Dba_Jk3Tb3i'},{id:'Da-d6YvTniW'},{id:'DaxdpoSznD6'},{id:'Ddv-qJsPVZ7'},
+    {id:'DbvbdQEstCj'},{id:'DamqIuntY0-'},{id:'DZH9LqouMwA'},{id:'DZAFbHrNNkm'},{id:'DYzlJ3VRhVY'}
   ];
   var track=document.getElementById('car-track'),prev=document.getElementById('car-prev'),next=document.getElementById('car-next'),count=document.getElementById('car-count');
   reels.forEach(function(r,i){
-    var url='https://www.instagram.com/reel/'+r.id+'/';
+    var url=r.yt?'https://youtu.be/'+r.yt:'https://www.instagram.com/reel/'+r.id+'/';
     var card=document.createElement('div');card.className='reel';
     var fr=document.createElement('div');fr.className='frame';
-    if(r.src){
+    if(r.yt){
+      var y=document.createElement('iframe');fr.className='frame yt';
+      y.src='https://www.youtube-nocookie.com/embed/'+r.yt+'?rel=0&playsinline=1';y.title='Video '+(i+1);y.setAttribute('loading','lazy');y.setAttribute('allowfullscreen','');
+      y.setAttribute('allow','accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen');
+      fr.appendChild(y);
+    }else if(r.src){
       var v=document.createElement('video');
       v.src=r.src;v.controls=true;v.preload='metadata';v.setAttribute('playsinline','');v.setAttribute('webkit-playsinline','');
       if(r.poster)v.poster=r.poster;
@@ -323,7 +330,7 @@ try{(function(){
       f.setAttribute('allow','autoplay; encrypted-media; picture-in-picture; fullscreen');
       fr.appendChild(f);
     }
-    var a=document.createElement('a');a.className='ext';a.href=url;a.target='_blank';a.rel='noopener';a.textContent='Open on Instagram';
+    var a=document.createElement('a');a.className='ext';a.href=url;a.target='_blank';a.rel='noopener';a.textContent=r.yt?'Watch on YouTube':'Open on Instagram';
     card.appendChild(fr);card.appendChild(a);track.appendChild(card);
   });
   function step(){var c=track.firstElementChild;if(!c)return 0;var cs=window.getComputedStyle(track);var g=parseFloat(cs.columnGap||cs.gap)||0;return c.getBoundingClientRect().width+g}
